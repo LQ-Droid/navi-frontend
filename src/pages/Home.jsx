@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { recognizeIntent, mockIntentResult } from '../utils/mock';
+import { mockIntentResult } from '../utils/mock';
 
 const suggestions = [
   '我工资到账了想办定存',

@@ -1,10 +1,37 @@
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { mockBranches, calcWaitTime, calcDistance } from '../utils/mock';
+
+const DEFAULT_LAT = 30.575;
+const DEFAULT_LNG = 104.065;
 
 export default function BranchDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const branch = mockBranches.find((b) => b.id === id);
+
+  const [userLat, setUserLat] = useState(null);
+  const [userLng, setUserLng] = useState(null);
+
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setUserLat(DEFAULT_LAT);
+      setUserLng(DEFAULT_LNG);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLat(pos.coords.latitude);
+        setUserLng(pos.coords.longitude);
+      },
+      () => {
+        setUserLat(DEFAULT_LAT);
+        setUserLng(DEFAULT_LNG);
+      },
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 300000 }
+    );
+  }, []);
 
   if (!branch) {
     return (
@@ -19,9 +46,9 @@ export default function BranchDetail() {
     );
   }
 
-  const userLat = 39.9042;
-  const userLng = 116.4074;
-  const distance = calcDistance(userLat, userLng, branch.lat, branch.lng);
+  const lat = userLat ?? DEFAULT_LAT;
+  const lng = userLng ?? DEFAULT_LNG;
+  const distance = calcDistance(lat, lng, branch.lat, branch.lng);
   const waitTime = calcWaitTime(branch.id);
 
   return (
@@ -45,7 +72,9 @@ export default function BranchDetail() {
         </div>
         <div className="detail-row">
           <span className="detail-label">距离</span>
-          <span className="detail-value">{distance.toFixed(1)} km</span>
+          <span className="detail-value">
+            {userLat !== null ? `${distance.toFixed(1)} km` : '定位中...'}
+          </span>
         </div>
         <div className="detail-row">
           <span className="detail-label">营业时间</span>
@@ -86,7 +115,17 @@ export default function BranchDetail() {
       </div>
 
       <div className="detail-actions">
-        <button className="primary-btn">导航前往</button>
+        <button
+          className="primary-btn"
+          onClick={() => {
+            window.open(
+              `https://uri.amap.com/marker?position=${branch.lng},${branch.lat}&name=${encodeURIComponent(branch.name)}&callnative=1`,
+              '_blank'
+            );
+          }}
+        >
+          导航前往
+        </button>
         <button className="secondary-btn">预约取号</button>
       </div>
     </div>
