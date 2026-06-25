@@ -5,9 +5,11 @@ import BranchDetail from './pages/BranchDetail';
 import History from './pages/History';
 import Layout from './components/Layout';
 
+const basePath = import.meta.env.PROD ? '/navi-frontend' : '/';
+
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basePath}>
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
